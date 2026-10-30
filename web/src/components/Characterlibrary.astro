@@ -3,9 +3,7 @@
   <div class="rounded-2xl border border-slate-700 bg-slate-900 p-6">
     <p class="text-sm text-cyan-400">100 DAYS AI STUDIO</p>
     <h2 class="mt-2 text-3xl font-semibold">Character Library</h2>
-    <p class="mt-3 text-slate-400">
-      Save your characters and organize their details.
-    </p>
+    <p class="mt-3 text-slate-400">Save your characters and organize their details.</p>
 
     <form id="character-form" class="mt-6 grid gap-4">
       <label class="grid gap-2">
@@ -33,62 +31,100 @@
       </button>
     </form>
 
+    <p id="save-message" class="mt-3 text-sm" role="status"></p>
+
     <h3 class="mt-8 text-xl font-semibold">Saved Characters</h3>
     <div id="character-list" class="mt-4 grid gap-3"></div>
   </div>
 </section>
 
 <script>
+(() => {
   const form = document.querySelector("#character-form");
   const list = document.querySelector("#character-list");
+  const message = document.querySelector("#save-message");
   const storageKey = "100days-characters";
 
+  if (!form || !list || !message) return;
+
+  function getCharacters() {
+    const data = localStorage.getItem(storageKey);
+    return data ? JSON.parse(data) : [];
+  }
+
   function renderCharacters() {
-    const characters = JSON.parse(localStorage.getItem(storageKey) || "[]");
-    list.innerHTML = "";
+    try {
+      const characters = getCharacters();
+      list.innerHTML = "";
 
-    characters.forEach((character, index) => {
-      const card = document.createElement("article");
-      card.className = "rounded-lg border border-slate-700 bg-slate-800 p-4";
+      characters.forEach((character, index) => {
+        const card = document.createElement("article");
+        card.className = "rounded-lg border border-slate-700 bg-slate-800 p-4";
 
-      const name = document.createElement("h4");
-      name.className = "font-semibold text-cyan-300";
-      name.textContent = (character.number ? character.number + " — " : "") + character.name;
+        const name = document.createElement("h4");
+        name.className = "font-semibold text-cyan-300";
+        name.textContent =
+          (character.number ? character.number + " — " : "") + character.name;
 
-      const details = document.createElement("p");
-      details.className = "mt-2 whitespace-pre-wrap text-slate-300";
-      details.textContent = character.details || "No details added.";
+        const details = document.createElement("p");
+        details.className = "mt-2 whitespace-pre-wrap text-slate-300";
+        details.textContent = character.details || "No details added.";
 
-      const remove = document.createElement("button");
-      remove.type = "button";
-      remove.className = "mt-3 rounded bg-slate-700 px-3 py-2 text-sm";
-      remove.textContent = "Delete";
-      remove.addEventListener("click", () => {
-        const updated = JSON.parse(localStorage.getItem(storageKey) || "[]");
-        updated.splice(index, 1);
-        localStorage.setItem(storageKey, JSON.stringify(updated));
-        renderCharacters();
+        const remove = document.createElement("button");
+        remove.type = "button";
+        remove.className = "mt-3 rounded bg-slate-700 px-3 py-2 text-sm";
+        remove.textContent = "Delete";
+
+        remove.addEventListener("click", () => {
+          try {
+            const updated = getCharacters();
+            updated.splice(index, 1);
+            localStorage.setItem(storageKey, JSON.stringify(updated));
+            message.textContent = "Character deleted.";
+            renderCharacters();
+          } catch (error) {
+            message.textContent = "Could not delete character.";
+          }
+        });
+
+        card.append(name, details, remove);
+        list.append(card);
       });
 
-      card.append(name, details, remove);
-      list.append(card);
-    });
-
-    if (!characters.length) list.textContent = "No characters saved yet.";
+      if (!characters.length) {
+        list.textContent = "No characters saved yet.";
+      }
+    } catch (error) {
+      message.textContent = "Could not load saved characters. Check browser storage.";
+    }
   }
 
   form.addEventListener("submit", (event) => {
     event.preventDefault();
-    const characters = JSON.parse(localStorage.getItem(storageKey) || "[]");
-    characters.push({
-      name: document.querySelector("#character-name").value.trim(),
-      number: document.querySelector("#character-number").value.trim(),
-      details: document.querySelector("#character-details").value.trim()
-    });
-    localStorage.setItem(storageKey, JSON.stringify(characters));
-    form.reset();
-    renderCharacters();
+
+    try {
+      const name = document.querySelector("#character-name").value.trim();
+      const number = document.querySelector("#character-number").value.trim();
+      const details = document.querySelector("#character-details").value.trim();
+
+      if (!name) {
+        message.textContent = "Please enter a character name.";
+        return;
+      }
+
+      const characters = getCharacters();
+      characters.push({ name, number, details });
+
+      localStorage.setItem(storageKey, JSON.stringify(characters));
+
+      message.textContent = "Character saved successfully!";
+      form.reset();
+      renderCharacters();
+    } catch (error) {
+      message.textContent = "Save failed. Browser storage may be unavailable.";
+    }
   });
 
   renderCharacters();
+})();
 </script>

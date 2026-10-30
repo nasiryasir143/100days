@@ -1,14 +1,16 @@
+
 ---
 // Single-page app. The whole site is this one page, by design.
 import Layout from "@/layouts/Layout.astro";
 import Header from "@/components/Header.astro";
 import Hero from "@/components/Hero.astro";
 import Studio from "@/components/Studio.astro";
-import CharacterLibrary from "@/components/Charactorlibrary.astro";
+import CharacterLibrary from "@/components/Characterlibrary.astro";
 ---
 
+<Layout>
   <Header />
-    <main>
+  <main>
     <Hero />
     <Studio />
     <CharacterLibrary />

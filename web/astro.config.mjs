@@ -8,8 +8,8 @@ import { fileURLToPath } from "node:url";
 const isProd = process.env.NODE_ENV === "production";
 
 export default defineConfig({
-  site: "https://igorcsis.github.io",
-  base: isProd ? "/nifty-vid" : "/",
+  site: site: "https://nasiryasir143.github.io",
+  base: isProd base: isProd ? "/100days" : "/",
   integrations: [tailwind({
     // We use Tailwind's @tailwind directives inside our own CSS file rather than
     // letting the integration inject a default stylesheet. That gives us control

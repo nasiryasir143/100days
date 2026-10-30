@@ -17,7 +17,7 @@ compatibility_flags = ["nodejs_compat"]
 # - HF_SPACE_BASE points at the Gradio Space we proxy to. Easy to swap if we
 #   ever move to a paid backend.
 [vars]
-ALLOWED_ORIGINS = "http://ALLOWED_ORIGINS =ALLOWED_ORIGINS  "http://localhost:4321,https://nasiryasir143.github.io"
+ALLOWED_ORIGINS = "http://localhost:4321,https://nasiryasir143.github.io"
 HF_SPACE_BASE = "https://cbensimon-wan2-2-fp8da-aoti-preview2.hf.space"
 HF_FN_NAME = "generate_video"
 

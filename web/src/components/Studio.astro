@@ -137,6 +137,30 @@
       </div>
     </div>
   </div>
+  <div class="mt-10 border-t border-ink-700 pt-8">
+    <h2 class="text-xl font-semibold text-slate-100 mb-4">
+      Generate Image
+    </h2>
+
+    <textarea
+      data-image-prompt
+      rows="3"
+      class="w-full rounded-md bg-ink-800 border border-ink-700 text-slate-100 px-4 py-3"
+      placeholder="Describe the image you want..."
+    ></textarea>
+
+    <button data-generate-image class="btn-primary mt-4">
+      Generate Image
+    </button>
+
+    <p data-image-status class="text-sm text-slate-400 mt-3"></p>
+
+    <img
+      data-generated-image
+      class="hidden mt-4 max-w-full rounded-lg"
+      alt="Generated image"
+    />
+  </div>
 </section>
 
 <script>

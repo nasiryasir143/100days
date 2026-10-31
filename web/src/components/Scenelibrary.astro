@@ -146,7 +146,13 @@
           message.textContent = "Scene deleted.";
           renderScenes();
         });
-
+        if (scene.image) {
+        const image = document.createElement("img");
+        image.src = scene.image;
+        image.alt = scene.name;
+        image.className = "mt-3 max-h-72 w-full rounded-lg object-contain";
+  card.append(image);
+}
         card.append(title, details, remove);
         list.append(card);
       });
@@ -172,7 +178,7 @@
       }
 
       const scenes = getScenes();
-      scenes.push({ name, details });
+      scenes.push({ name, details, image: selectedImage });
       localStorage.setItem(storageKey, JSON.stringify(scenes));
 
       message.textContent = "Scene saved successfully!";

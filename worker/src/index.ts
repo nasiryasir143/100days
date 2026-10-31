@@ -36,8 +36,8 @@ export interface Env {
   readonly ALLOWED_ORIGINS: string;
   readonly HF_SPACE_BASE: string;
   readonly HF_FN_NAME: string;
+  readonly Ai: Ai;
 }
-
 // Default negative prompt lifted from the upstream Space's app.py. Keeping it
 // here means callers don't have to pass it on every request, and the model
 // still gets the guidance it expects.
@@ -75,7 +75,73 @@ export default {
         return withCors(jsonResponse({ error: msg }, 500), origin, env);
       }
     }
+        if (req.method === "POST" && url.pathname === "/generate-image") {
+      try {
+        const form = await req.formData();
+        const prompt = form.get("prompt");
 
+        if (typeof prompt !== "string" || !prompt.trim()) {
+          return withCors(
+            jsonResponse({ error: "Prompt is required" }, 400),
+            origin,
+            env
+          );
+        }
+
+        const modelForm = new FormData();
+        modelForm.append("prompt", prompt.trim());
+        modelForm.append("width", "1024");
+        modelForm.append("height", "1024");
+
+        const image = form.get("image");
+
+        if (image instanceof File && image.size > 0) {
+          if (image.size > 8 * 1024 * 1024) {
+            return withCors(
+              jsonResponse({ error: "Image is too large" }, 400),
+              origin,
+              env
+            );
+          }
+
+          modelForm.append("input_image_0", image, image.name);
+        }
+
+        const modelRequest = new Response(modelForm);
+
+        const result = await env.Ai.run(
+          "@cf/black-forest-labs/flux-2-klein-4b",
+          {
+            multipart: {
+              body: modelRequest.body!,
+              contentType: modelRequest.headers.get("content-type")!,
+            },
+          }
+        ) as { image: string };
+
+        const binary = atob(result.image);
+        const bytes = Uint8Array.from(
+          binary,
+          (char) => char.charCodeAt(0)
+        );
+
+        return withCors(
+          new Response(bytes, {
+            headers: { "Content-Type": "image/png" },
+          }),
+          origin,
+          env
+        );
+      } catch (err) {
+        const msg = err instanceof Error ? err.message : String(err);
+
+        return withCors(
+          jsonResponse({ error: msg }, 500),
+          origin,
+          env
+        );
+      }
+    }
     if (req.method === "GET" && url.pathname === "/health") {
       return withCors(jsonResponse({ ok: true }), origin, env);
     }

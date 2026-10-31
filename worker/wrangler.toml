@@ -3,7 +3,7 @@
 # `pnpm wrangler deploy` reads this file. The Worker holds no secrets in this
 # version (we hit a public HF Space, no API key), so the config is short.
 
-name = "nifty-vid"
+name = "100days"
 main = "src/index.ts"
 compatibility_date = "2025-05-01"
 
@@ -25,3 +25,5 @@ HF_FN_NAME = "generate_video"
 # in production. `wrangler tail` will stream logs live.
 [observability]
 enabled = true
+[ai]
+binding = "Ai"

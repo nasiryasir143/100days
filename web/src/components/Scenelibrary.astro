@@ -16,10 +16,22 @@
 
       <label class="grid gap-2">
         Scene Details
+    
         <textarea id="scene-details" rows="3"
           placeholder="Location, background, lighting, camera angle"
           class="rounded-lg border border-slate-700 bg-slate-800 p-3 text-white"></textarea>
+    
+
+      <label class="grid gap-2">
+        Scene Image
+        <input id="scene-image" type="file" accept="image/png,image/jpeg,image/webp"
+          class="rounded-lg border border-slate-700 bg-slate-800 p-3 text-white" />
+        <span class="text-xs text-slate-400">PNG, JPG or WEBP · Maximum 8 MB</span>
       </label>
+
+      <img id="scene-preview" alt="Scene preview"
+        class="hidden max-h-72 w-full rounded-lg object-contain" />
+
 
       <button type="submit"
         class="rounded-lg bg-cyan-500 p-3 font-semibold text-slate-950">
@@ -39,14 +51,46 @@
   const form = document.querySelector("#scene-form");
   const list = document.querySelector("#scene-list");
   const message = document.querySelector("#scene-save-message");
+  const imageInput = document.querySelector("#scene-image");
+  const preview = document.querySelector("#scene-preview");
+  let selectedImage = "";
   const storageKey = "100days-scenes";
 
   if (!form || !list || !message) return;
-
   function getScenes() {
     const data = localStorage.getItem(storageKey);
     return data ? JSON.parse(data) : [];
   }
+
+  function compressImage(file) {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+
+      reader.onload = () => {
+        const img = new Image();
+
+        img.onload = () => {
+          const canvas = document.createElement("canvas");
+          const scale = Math.min(1, 1200 / Math.max(img.width, img.height));
+
+          canvas.width = Math.round(img.width * scale);
+          canvas.height = Math.round(img.height * scale);
+
+          const ctx = canvas.getContext("2d");
+          ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+
+          resolve(canvas.toDataURL("image/jpeg", 0.78));
+        };
+
+        img.onerror = reject;
+        img.src = reader.result;
+      };
+
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
+  }
+
 
   function renderScenes() {
     try {

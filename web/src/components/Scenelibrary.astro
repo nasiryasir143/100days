@@ -91,7 +91,32 @@
     });
   }
 
+  imageInput.addEventListener("change", async () => {
+    const file = imageInput.files[0];
 
+    if (!file) return;
+
+    if (!["image/png", "image/jpeg", "image/webp"].includes(file.type)) {
+      message.textContent = "Please select PNG, JPG or WEBP.";
+      imageInput.value = "";
+      return;
+    }
+
+    if (file.size > 8 * 1024 * 1024) {
+      message.textContent = "Image must be smaller than 8 MB.";
+      imageInput.value = "";
+      return;
+    }
+
+    try {
+      selectedImage = await compressImage(file);
+      preview.src = selectedImage;
+      preview.classList.remove("hidden");
+      message.textContent = "Image ready.";
+    } catch {
+      message.textContent = "Could not process this image.";
+    }
+  });
   function renderScenes() {
     try {
       const scenes = getScenes();

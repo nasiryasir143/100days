@@ -406,7 +406,7 @@ function addToHistory(url: string) {
     v.pause();
     v.currentTime = 0;
   });
-  // Click to bring it back into the main result slot.
+    // Click to bring it back into the main result slot.
   li.addEventListener("click", () => {
     resultVideo.src = url;
     downloadLink.href = url;
@@ -419,3 +419,51 @@ function addToHistory(url: string) {
 // Initial UI state
 showResultState("empty");
 refreshGenerateButton();
+
+// ---------- Generate Image ----------
+
+const imagePrompt = $<HTMLTextAreaElement>("[data-image-prompt]");
+const imageButton = $<HTMLButtonElement>("[data-generate-image]");
+const imageStatus = $<HTMLParagraphElement>("[data-image-status]");
+const generatedImage = $<HTMLImageElement>("[data-generated-image]");
+
+imageButton.addEventListener("click", async () => {
+  const prompt = imagePrompt.value.trim();
+
+  if (!prompt) {
+    imageStatus.textContent = "Please enter an image prompt.";
+    return;
+  }
+
+  imageButton.disabled = true;
+  imageButton.textContent = "Generating...";
+  imageStatus.textContent = "Generating your image. Please wait.";
+
+  try {
+    const form = new FormData();
+    form.append("prompt", prompt);
+
+    const response = await fetch(`${WORKER_URL}/generate-image`, {
+      method: "POST",
+      body: form,
+    });
+
+    if (!response.ok) {
+      throw new Error(await readErrorMessage(response));
+    }
+
+    const blob = await response.blob();
+    const imageUrl = URL.createObjectURL(blob);
+
+    generatedImage.src = imageUrl;
+    generatedImage.classList.remove("hidden");
+
+    imageStatus.textContent = "Image generated successfully!";
+  } catch (err) {
+    imageStatus.textContent =
+      "Failed: " + (err instanceof Error ? err.message : String(err));
+  } finally {
+    imageButton.disabled = false;
+    imageButton.textContent = "Generate Image";
+  }
+});

@@ -44,13 +44,13 @@ const absoluteOg = new URL(`${baseUrl}${ogImage}`, siteOrigin).toString();
 const jsonLd = {
   "@context": "https://schema.org",
   "@type": "SoftwareApplication",
-  name: "NiftyVid",
+  name: "100 Days AI Studio",
   url: canonical,
   description,
   applicationCategory: "MultimediaApplication",
   operatingSystem: "Any (web)",
   offers: { "@type": "Offer", price: "0", priceCurrency: "USD" },
-  author: { "@type": "Person", name: "Igor Lima", url: "https://github.com/IgorCSIS" },
+  author: { "@type": "Organization", name: "100 Days AI Studio" },
 };
 ---
 
@@ -73,7 +73,7 @@ const jsonLd = {
       name="keywords"
       content="image to video, AI video generator, Wan 2.2, Wan2.2, Hugging Face Space, free video AI, animate photo, image animation, text to video, open source video AI, NiftyAi"
     />
-    <meta name="author" content="Igor Lima" />
+    <meta name="author" content="100 Days AI Studio" />
     <meta name="robots" content="index, follow, max-image-preview:large" />
 
     <!-- Favicons. The SVG covers modern browsers; the PNG is a fallback for
@@ -85,14 +85,14 @@ const jsonLd = {
          single most important tag here: a good card more than doubles
          click-through on shared links. -->
     <meta property="og:type" content="website" />
-    <meta property="og:site_name" content="NiftyVid by Igor Lima" />
+    <meta property="og:site_name" content="100 Days AI Studio" />
     <meta property="og:title" content={title} />
     <meta property="og:description" content={description} />
     <meta property="og:url" content={canonical} />
     <meta property="og:image" content={absoluteOg} />
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="630" />
-    <meta property="og:image:alt" content="NiftyVid: image to video with Wan 2.2" />
+    <meta property="og:image:alt" content="100 Days AI Studio: AI image and video generator" />
     <meta property="og:locale" content="en_US" />
 
     <!-- Twitter / X. summary_large_image gives the wide hero card. -->
@@ -100,7 +100,7 @@ const jsonLd = {
     <meta name="twitter:title" content={title} />
     <meta name="twitter:description" content={description} />
     <meta name="twitter:image" content={absoluteOg} />
-    <meta name="twitter:image:alt" content="NiftyVid: image to video with Wan 2.2" />
+    <meta name="twitter:image:alt" content="100 Days AI Studio: AI image and video generator" />
 
     <!-- JSON-LD structured data for search engine rich results. set:html is
          the Astro escape hatch that prevents the JSON from being HTML-escaped. -->

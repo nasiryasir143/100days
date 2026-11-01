@@ -54,7 +54,20 @@ const resultVideo  = $<HTMLVideoElement>("[data-result-video]");
 const downloadLink = $<HTMLAnchorElement>("[data-download]");
 const historyWrap  = $<HTMLDivElement>("[data-history-wrap]");
 const historyList  = $<HTMLUListElement>("[data-history]");
+// ---------- Selected Character ----------
 
+const selectedCharacterEl = $<HTMLParagraphElement>("[data-selected-character]");
+
+document.addEventListener("100days:character-selected", (event) => {
+  const character = (event as CustomEvent<{
+    name: string;
+    number: string | number;
+    details: string;
+  }>).detail;
+
+  selectedCharacterEl.textContent =
+    `#${character.number} - ${character.name}: ${character.details}`;
+});
 // ---------- Local state ----------
 
 // Kept in a tiny mutable object so handlers can read/write it without

@@ -54,32 +54,60 @@ const resultVideo  = $<HTMLVideoElement>("[data-result-video]");
 const downloadLink = $<HTMLAnchorElement>("[data-download]");
 const historyWrap  = $<HTMLDivElement>("[data-history-wrap]");
 const historyList  = $<HTMLUListElement>("[data-history]");
-// ---------- Selected Character ----------
+// ---------- Selected Character and Scene ----------
 
-const selectedCharacterEl = $<HTMLParagraphElement>("[data-selected-character]");
+let selectedCharacter: {
+  name: string;
+  number: string | number;
+  details: string;
+} | null = null;
+
+let selectedScene: {
+  name: string;
+  details: string;
+} | null = null;
+
+const selectedCharacterEl =
+  $<HTMLParagraphElement>("[data-selected-character]");
+
+const selectedSceneEl =
+  $<HTMLParagraphElement>("[data-selected-scene]");
+
+function updateAutoPrompt() {
+  if (!selectedCharacter || !selectedScene) return;
+
+  promptEl.value =
+    `Show ${selectedCharacter.name}, ${selectedCharacter.details}, ` +
+    `in ${selectedScene.name}, ${selectedScene.details}. ` +
+    `Keep the character's appearance consistent. Add natural movement ` +
+    `and a smooth cinematic camera movement.`;
+
+  promptEl.dispatchEvent(new Event("input", { bubbles: true }));
+}
 
 document.addEventListener("100days:character-selected", (event) => {
-  const character = (event as CustomEvent<{
+  selectedCharacter = (event as CustomEvent<{
     name: string;
     number: string | number;
     details: string;
   }>).detail;
 
   selectedCharacterEl.textContent =
-    `#${character.number} - ${character.name}: ${character.details}`;
-});
-// ---------- Selected Scene ----------
+    `#${selectedCharacter.number} - ${selectedCharacter.name}: ${selectedCharacter.details}`;
 
-const selectedSceneEl = $<HTMLParagraphElement>("[data-selected-scene]");
+  updateAutoPrompt();
+});
 
 document.addEventListener("100days:scene-selected", (event) => {
-  const scene = (event as CustomEvent<{
+  selectedScene = (event as CustomEvent<{
     name: string;
     details: string;
   }>).detail;
 
   selectedSceneEl.textContent =
-    `${scene.name}: ${scene.details}`;
+    `${selectedScene.name}: ${selectedScene.details}`;
+
+  updateAutoPrompt();
 });
 // ---------- Local state ----------
 

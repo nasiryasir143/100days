@@ -135,6 +135,19 @@
         details.textContent = scene.details || "No details added.";
 
         const remove = document.createElement("button");
+        const select = document.createElement("button");
+select.type = "button";
+select.className = "mt-3 mr-2 rounded bg-cyan-600 px-3 py-2 text-sm";
+select.textContent = "Select Scene";
+
+select.addEventListener("click", () => {
+  document.dispatchEvent(
+    new CustomEvent("100days:scene-selected", {
+      detail: scene
+    })
+  );
+  message.textContent = "Scene selected: " + scene.name;
+});
         remove.type = "button";
         remove.className = "mt-3 rounded bg-slate-700 px-3 py-2 text-sm";
         remove.textContent = "Delete";
@@ -153,7 +166,7 @@
         image.className = "mt-3 max-h-72 w-full rounded-lg object-contain";
   card.append(image);
 }
-        card.append(title, details, remove);
+        card.append(title, details, select, remove);
         list.append(card);
       });
 

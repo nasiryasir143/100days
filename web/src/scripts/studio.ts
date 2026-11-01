@@ -68,6 +68,19 @@ document.addEventListener("100days:character-selected", (event) => {
   selectedCharacterEl.textContent =
     `#${character.number} - ${character.name}: ${character.details}`;
 });
+// ---------- Selected Scene ----------
+
+const selectedSceneEl = $<HTMLParagraphElement>("[data-selected-scene]");
+
+document.addEventListener("100days:scene-selected", (event) => {
+  const scene = (event as CustomEvent<{
+    name: string;
+    details: string;
+  }>).detail;
+
+  selectedSceneEl.textContent =
+    `${scene.name}: ${scene.details}`;
+});
 // ---------- Local state ----------
 
 // Kept in a tiny mutable object so handlers can read/write it without

@@ -69,7 +69,18 @@
         const details = document.createElement("p");
         details.className = "mt-2 whitespace-pre-wrap text-slate-300";
         details.textContent = character.details || "No details added.";
+        const select = document.createElement("button");
+        select.type = "button";select.className = "mt-3 mr-2 rounded bg-cyan-600 px-3 py-2 text-sm";
+        select.textContent = "Select Character";
 
+select.addEventListener("click", () => {
+  document.dispatchEvent(
+    new CustomEvent("100days:character-selected", {
+      detail: character
+    })
+  );
+  message.textContent = "Character selected: " + character.name;
+});
         const remove = document.createElement("button");
         remove.type = "button";
         remove.className = "mt-3 rounded bg-slate-700 px-3 py-2 text-sm";
@@ -87,7 +98,7 @@
           }
         });
 
-        card.append(name, details, remove);
+        card.append(name, details, select, remove);
         list.append(card);
       });
 

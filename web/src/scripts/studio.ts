@@ -480,7 +480,7 @@ const imagePrompt = $<HTMLTextAreaElement>("[data-image-prompt]");
 const imageButton = $<HTMLButtonElement>("[data-generate-image]");
 const imageStatus = $<HTMLParagraphElement>("[data-image-status]");
 const generatedImage = $<HTMLImageElement>("[data-generated-image]");
-
+const imageDownload = $<HTMLAnchorElement>("[data-image-download]");
 imageButton.addEventListener("click", async () => {
   const prompt = imagePrompt.value.trim();
 
@@ -511,7 +511,13 @@ imageButton.addEventListener("click", async () => {
 
     generatedImage.src = imageUrl;
     generatedImage.classList.remove("hidden");
+    imageDownload.href = imageUrl;
 
+const extension = blob.type.includes("jpeg") ? "jpg"
+  : blob.type.includes("webp") ? "webp" : "png";
+
+imageDownload.download = `100-days-image-${Date.now()}.${extension}`;
+imageDownload.classList.remove("hidden");
     imageStatus.textContent = "Image generated successfully!";
   } catch (err) {
     imageStatus.textContent =

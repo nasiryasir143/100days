@@ -361,7 +361,7 @@ async function consumeSseUntilComplete(stream: ReadableStream<Uint8Array>): Prom
           throw new Error("Upstream returned malformed result payload.");
         }
         const first = Array.isArray(payload) ? payload[0] : null;
-        const url = extractVideoUrl(first);
+        const url = extractVideoUrl(first, videoModelEl.value);
         if (!url) throw new Error("Job finished but no video URL was returned.");
         return url;
       }
@@ -407,22 +407,22 @@ function parseSseEvent(raw: string): { name: string; data: string } | null {
 // Hardcoded because the browser doesn't know the Space URL and we'd rather
 // not round-trip just to fall back. If the upstream Space ever moves, this is
 // the one constant to update.
-const HF_SPACE_BASE = "https://cbensimon-wan2-2-fp8da-aoti-preview2.hf.space";
+const VIDEO_SPACE_BASES: Record<string, string> = {\n  "wan-2.2-hf": "https://cbensimon-wan2-2-fp8da-aoti-preview2.hf.space",\n  "ltx-video-distilled": "https://lightricks-ltx-video-distilled.hf.space",\n};
 
 /**
  * Get a playable absolute URL from whatever Gradio returned. v4 wraps files
  * in FileData objects with `url` and `path`; older code returns bare strings.
  * Belt-and-suspenders so a Gradio upgrade upstream doesn't silently break us.
  */
-function extractVideoUrl(fileData: unknown): string | null {
+function extractVideoUrl(fileData: unknown, modelId: string): string | null {\n  const spaceBase = VIDEO_SPACE_BASES[modelId] || VIDEO_SPACE_BASES["ltx-video-distilled"]!;
   if (!fileData) return null;
   if (typeof fileData === "string") {
-    return `${HF_SPACE_BASE}/gradio_api/file=${fileData}`;
+    return `${spaceBase}/gradio_api/file=${fileData}`;
   }
   if (typeof fileData === "object") {
     const f = fileData as { url?: string; path?: string };
     if (f.url) return f.url;
-    if (f.path) return `${HF_SPACE_BASE}/gradio_api/file=${f.path}`;
+    if (f.path) return `${spaceBase}/gradio_api/file=${f.path}`;
   }
   return null;
 }

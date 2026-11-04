@@ -37,6 +37,7 @@ export interface Env {
   readonly HF_SPACE_BASE: string;
   readonly HF_FN_NAME: string;
   readonly VIDEO_MODEL_ID?: string;
+  readonly LTX_SPACE_BASE?: string;
   readonly Ai: Ai;
 }
 // Default negative prompt lifted from the upstream Space's app.py. Keeping it
@@ -194,18 +195,23 @@ async function handleGenerate(req: Request, env: Env): Promise<Response> {
   const userParams: UserParams =
     parsed !== null && typeof parsed === "object" ? (parsed as UserParams) : {};
 
-  const selectedModel = userParams.model_id || "wan-2.2-hf";
-  const activeModel = env.VIDEO_MODEL_ID || "wan-2.2-hf";
-  if (selectedModel !== activeModel || selectedModel !== "wan-2.2-hf") {
+  const selectedModel = userParams.model_id || env.VIDEO_MODEL_ID || "ltx-video-distilled";
+  const activeModel = env.VIDEO_MODEL_ID || "ltx-video-distilled";
+  if (selectedModel !== activeModel) {
     return jsonResponse({ error: "Selected video model is not configured." }, 400);
   }
 
-  // Fast steps. Each is a single short HTTP call, well under any limit.
+  if (selectedModel === "ltx-video-distilled") {
+    return generateWithLtx(image, userParams, env);
+  }
+
+  if (selectedModel !== "wan-2.2-hf") {
+    return jsonResponse({ error: "Unknown video model." }, 400);
+  }
+
+  // Existing Wan 2.2 adapter is retained as a rollback path.
   const imageRef = await uploadImageToSpace(image, env);
   const eventId = await submitJob(imageRef, image.name, userParams, env);
-
-  // Open the SSE stream upstream. Don't consume the body, we hand it
-  // straight to the browser.
   const upstream = await fetch(
     `${env.HF_SPACE_BASE}/gradio_api/call/${env.HF_FN_NAME}/${eventId}`,
     { method: "GET", headers: { Accept: "text/event-stream" } },
@@ -213,10 +219,6 @@ async function handleGenerate(req: Request, env: Env): Promise<Response> {
   if (!upstream.ok || !upstream.body) {
     throw new Error(`Could not open result stream (${upstream.status}).`);
   }
-
-  // Return the upstream body directly. Cloudflare will pipe it. We add the
-  // right headers so EventSource-style readers Just Work, and we disable
-  // proxy/CDN buffering so events arrive promptly.
   return new Response(upstream.body, {
     status: 200,
     headers: {

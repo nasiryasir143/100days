@@ -301,7 +301,7 @@ function startLoadingMessages(): () => void {
   const messages = [
     "Uploading image...",
     "Waiting in the GPU queue...",
-    "Warming up Wan 2.2 weights...",
+    "Warming up LTX Video weights...",
     "Diffusing frames...",
     "Stitching the video together...",
     "Almost there. First runs can take a minute or two...",

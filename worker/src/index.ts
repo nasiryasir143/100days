@@ -1,3 +1,5 @@
+import { generateWithLtx } from "./providers/ltx-video";
+
 /**
  * NiftyVid proxy Worker.
  *

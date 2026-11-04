@@ -1,3 +1,5 @@
+import { generateWithLtx } from "./providers/ltx-video";
+
 /**
  * NiftyVid proxy Worker.
  *
@@ -36,6 +38,8 @@ export interface Env {
   readonly ALLOWED_ORIGINS: string;
   readonly HF_SPACE_BASE: string;
   readonly HF_FN_NAME: string;
+  readonly VIDEO_MODEL_ID?: string;
+  readonly LTX_SPACE_BASE?: string;
   readonly Ai: Ai;
 }
 // Default negative prompt lifted from the upstream Space's app.py. Keeping it
@@ -53,6 +57,7 @@ interface UserParams {
   prompt?: string;
   duration_seconds?: number;
   steps?: number;
+  model_id?: string;
 }
 
 export default {
@@ -93,9 +98,9 @@ export default {
         modelForm.append("width", "1024");
         modelForm.append("height", "1024");
 
-        const image = form.get("image");
+        const image = form.get("image") as unknown as File | null;
 
-        if (image instanceof File && image.size > 0) {
+        if (image && typeof image !== "string" && image.size > 0) {
           if (image.size > 8 * 1024 * 1024) {
             return withCors(
               jsonResponse({ error: "Image is too large" }, 400),
@@ -109,7 +114,12 @@ export default {
 
         const modelRequest = new Response(modelForm);
 
-        const result = await env.Ai.run(
+        const runImageModel = env.Ai.run as unknown as (
+          model: string,
+          inputs: Record<string, unknown>
+        ) => Promise<{ image: string }>;
+
+        const result = await runImageModel(
           "@cf/black-forest-labs/flux-2-klein-4b",
           {
             multipart: {
@@ -117,7 +127,7 @@ export default {
               contentType: modelRequest.headers.get("content-type")!,
             },
           }
-        ) as { image: string };
+        );
 
         const binary = atob(result.image);
         const bytes = Uint8Array.from(
@@ -187,12 +197,23 @@ async function handleGenerate(req: Request, env: Env): Promise<Response> {
   const userParams: UserParams =
     parsed !== null && typeof parsed === "object" ? (parsed as UserParams) : {};
 
-  // Fast steps. Each is a single short HTTP call, well under any limit.
+  const selectedModel = userParams.model_id || env.VIDEO_MODEL_ID || "ltx-video-distilled";
+  const activeModel = env.VIDEO_MODEL_ID || "ltx-video-distilled";
+  if (selectedModel !== activeModel) {
+    return jsonResponse({ error: "Selected video model is not configured." }, 400);
+  }
+
+  if (selectedModel === "ltx-video-distilled") {
+    return generateWithLtx(image, userParams, env);
+  }
+
+  if (selectedModel !== "wan-2.2-hf") {
+    return jsonResponse({ error: "Unknown video model." }, 400);
+  }
+
+  // Existing Wan 2.2 adapter is retained as a rollback path.
   const imageRef = await uploadImageToSpace(image, env);
   const eventId = await submitJob(imageRef, image.name, userParams, env);
-
-  // Open the SSE stream upstream. Don't consume the body, we hand it
-  // straight to the browser.
   const upstream = await fetch(
     `${env.HF_SPACE_BASE}/gradio_api/call/${env.HF_FN_NAME}/${eventId}`,
     { method: "GET", headers: { Accept: "text/event-stream" } },
@@ -200,10 +221,6 @@ async function handleGenerate(req: Request, env: Env): Promise<Response> {
   if (!upstream.ok || !upstream.body) {
     throw new Error(`Could not open result stream (${upstream.status}).`);
   }
-
-  // Return the upstream body directly. Cloudflare will pipe it. We add the
-  // right headers so EventSource-style readers Just Work, and we disable
-  // proxy/CDN buffering so events arrive promptly.
   return new Response(upstream.body, {
     status: 200,
     headers: {

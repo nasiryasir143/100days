@@ -39,6 +39,7 @@ const fileInput    = $<HTMLInputElement>("[data-file-input]");
 const dropEmpty    = $<HTMLDivElement>("[data-dropzone-empty]");
 const dropPreview  = $<HTMLImageElement>("[data-dropzone-preview]");
 const promptEl     = $<HTMLTextAreaElement>("[data-prompt]");
+const videoModelEl = $<HTMLSelectElement>("[data-video-model]");
 const durationEl   = $<HTMLInputElement>("[data-duration]");
 const durationVal  = $<HTMLSpanElement>("[data-duration-value]");
 const stepsEl      = $<HTMLInputElement>("[data-steps]");
@@ -252,6 +253,7 @@ generateBtn.addEventListener("click", async () => {
     form.append(
       "params",
       JSON.stringify({
+        model_id: videoModelEl.value,
         prompt: promptEl.value.trim(),
         duration_seconds: parseFloat(durationEl.value),
         steps: parseInt(stepsEl.value, 10),
@@ -299,7 +301,7 @@ function startLoadingMessages(): () => void {
   const messages = [
     "Uploading image...",
     "Waiting in the GPU queue...",
-    "Warming up Wan 2.2 weights...",
+    "Warming up LTX Video weights...",
     "Diffusing frames...",
     "Stitching the video together...",
     "Almost there. First runs can take a minute or two...",
@@ -359,7 +361,7 @@ async function consumeSseUntilComplete(stream: ReadableStream<Uint8Array>): Prom
           throw new Error("Upstream returned malformed result payload.");
         }
         const first = Array.isArray(payload) ? payload[0] : null;
-        const url = extractVideoUrl(first);
+        const url = extractVideoUrl(first, videoModelEl.value);
         if (!url) throw new Error("Job finished but no video URL was returned.");
         return url;
       }
@@ -405,22 +407,26 @@ function parseSseEvent(raw: string): { name: string; data: string } | null {
 // Hardcoded because the browser doesn't know the Space URL and we'd rather
 // not round-trip just to fall back. If the upstream Space ever moves, this is
 // the one constant to update.
-const HF_SPACE_BASE = "https://cbensimon-wan2-2-fp8da-aoti-preview2.hf.space";
+const VIDEO_SPACE_BASES: Record<string, string> = {
+  "wan-2.2-hf": "https://cbensimon-wan2-2-fp8da-aoti-preview2.hf.space",
+  "ltx-video-distilled": "https://lightricks-ltx-video-distilled.hf.space",
+};
 
 /**
  * Get a playable absolute URL from whatever Gradio returned. v4 wraps files
  * in FileData objects with `url` and `path`; older code returns bare strings.
  * Belt-and-suspenders so a Gradio upgrade upstream doesn't silently break us.
  */
-function extractVideoUrl(fileData: unknown): string | null {
+function extractVideoUrl(fileData: unknown, modelId: string): string | null {
+  const spaceBase = VIDEO_SPACE_BASES[modelId] || VIDEO_SPACE_BASES["ltx-video-distilled"]!;
   if (!fileData) return null;
   if (typeof fileData === "string") {
-    return `${HF_SPACE_BASE}/gradio_api/file=${fileData}`;
+    return `${spaceBase}/gradio_api/file=${fileData}`;
   }
   if (typeof fileData === "object") {
     const f = fileData as { url?: string; path?: string };
     if (f.url) return f.url;
-    if (f.path) return `${HF_SPACE_BASE}/gradio_api/file=${f.path}`;
+    if (f.path) return `${spaceBase}/gradio_api/file=${f.path}`;
   }
   return null;
 }

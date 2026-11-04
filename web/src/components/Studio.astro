@@ -52,8 +52,15 @@
   </p>
 </div>
       <div>
+        <label for="video-model" class="block text-sm font-medium text-slate-300 mb-2">2. Select a Model</label>
+        <select id="video-model" data-video-model class="w-full rounded-md bg-ink-800 border border-ink-700 text-slate-100 px-4 py-3 outline-none focus:border-mint">
+          <option value="ltx-video-distilled">LTX Video Distilled · Hugging Face (Selected)</option>
+        </select>
+        <p class="mt-1 text-xs text-slate-500">Only connected models appear here. More providers can be added independently of image generation.</p>
+      </div>
+      <div>
         <label for="prompt" class="block text-sm font-medium text-slate-300 mb-2">
-          2. Prompt
+          3. Prompt
         </label>
         <textarea
           id="prompt"

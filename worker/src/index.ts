@@ -36,6 +36,7 @@ export interface Env {
   readonly ALLOWED_ORIGINS: string;
   readonly HF_SPACE_BASE: string;
   readonly HF_FN_NAME: string;
+  readonly VIDEO_MODEL_ID?: string;
   readonly Ai: Ai;
 }
 // Default negative prompt lifted from the upstream Space's app.py. Keeping it
@@ -53,6 +54,7 @@ interface UserParams {
   prompt?: string;
   duration_seconds?: number;
   steps?: number;
+  model_id?: string;
 }
 
 export default {
@@ -186,6 +188,12 @@ async function handleGenerate(req: Request, env: Env): Promise<Response> {
   const parsed = typeof paramsRaw === "string" ? safeJsonParse(paramsRaw) : null;
   const userParams: UserParams =
     parsed !== null && typeof parsed === "object" ? (parsed as UserParams) : {};
+
+  const selectedModel = userParams.model_id || "wan-2.2-hf";
+  const activeModel = env.VIDEO_MODEL_ID || "wan-2.2-hf";
+  if (selectedModel !== activeModel || selectedModel !== "wan-2.2-hf") {
+    return jsonResponse({ error: "Selected video model is not configured." }, 400);
+  }
 
   // Fast steps. Each is a single short HTTP call, well under any limit.
   const imageRef = await uploadImageToSpace(image, env);

@@ -97,7 +97,7 @@ export default {
 
         const image = form.get("image");
 
-        if (image instanceof File && image.size > 0) {
+        if (image && typeof image !== "string" && image.size > 0) {
           if (image.size > 8 * 1024 * 1024) {
             return withCors(
               jsonResponse({ error: "Image is too large" }, 400),
@@ -111,7 +111,12 @@ export default {
 
         const modelRequest = new Response(modelForm);
 
-        const result = await env.Ai.run(
+        const runImageModel = env.Ai.run as unknown as (
+          model: string,
+          inputs: Record<string, unknown>
+        ) => Promise<{ image: string }>;
+
+        const result = await runImageModel(
           "@cf/black-forest-labs/flux-2-klein-4b",
           {
             multipart: {
@@ -119,7 +124,7 @@ export default {
               contentType: modelRequest.headers.get("content-type")!,
             },
           }
-        ) as { image: string };
+        );
 
         const binary = atob(result.image);
         const bytes = Uint8Array.from(

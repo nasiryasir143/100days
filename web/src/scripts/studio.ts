@@ -39,6 +39,7 @@ const fileInput    = $<HTMLInputElement>("[data-file-input]");
 const dropEmpty    = $<HTMLDivElement>("[data-dropzone-empty]");
 const dropPreview  = $<HTMLImageElement>("[data-dropzone-preview]");
 const promptEl     = $<HTMLTextAreaElement>("[data-prompt]");
+const videoModelEl = $<HTMLSelectElement>("[data-video-model]");
 const durationEl   = $<HTMLInputElement>("[data-duration]");
 const durationVal  = $<HTMLSpanElement>("[data-duration-value]");
 const stepsEl      = $<HTMLInputElement>("[data-steps]");
@@ -252,6 +253,7 @@ generateBtn.addEventListener("click", async () => {
     form.append(
       "params",
       JSON.stringify({
+        model_id: videoModelEl.value,
         prompt: promptEl.value.trim(),
         duration_seconds: parseFloat(durationEl.value),
         steps: parseInt(stepsEl.value, 10),

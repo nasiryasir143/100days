@@ -413,22 +413,49 @@ const VIDEO_SPACE_BASES: Record<string, string> = {
 };
 
 /**
- * Get a playable absolute URL from whatever Gradio returned. v4 wraps files
- * in FileData objects with `url` and `path`; older code returns bare strings.
- * Belt-and-suspenders so a Gradio upgrade upstream doesn't silently break us.
+ * Gradio's Video component may return either a FileData object directly
+ * or a wrapper such as { video: FileData, subtitles: ... }. Search the
+ * returned structure recursively so both response shapes are supported.
  */
 function extractVideoUrl(fileData: unknown, modelId: string): string | null {
   const spaceBase = VIDEO_SPACE_BASES[modelId] || VIDEO_SPACE_BASES["ltx-video-distilled"]!;
-  if (!fileData) return null;
-  if (typeof fileData === "string") {
-    return `${spaceBase}/gradio_api/file=${fileData}`;
-  }
-  if (typeof fileData === "object") {
-    const f = fileData as { url?: string; path?: string };
-    if (f.url) return f.url;
-    if (f.path) return `${spaceBase}/gradio_api/file=${f.path}`;
-  }
-  return null;
+  const seen = new Set<object>();
+
+  const visit = (value: unknown): string | null => {
+    if (!value) return null;
+
+    if (typeof value === "string") {
+      if (/^https?:\/\//i.test(value)) return value;
+      if (value.startsWith("/")) return `${spaceBase}/gradio_api/file=${value}`;
+      return `${spaceBase}/gradio_api/file=${value}`;
+    }
+
+    if (typeof value !== "object" || seen.has(value)) return null;
+    seen.add(value);
+
+    const item = value as Record<string, unknown>;
+    if (typeof item.url === "string" && item.url) {
+      return /^https?:\/\//i.test(item.url) ? item.url : new URL(item.url, spaceBase).toString();
+    }
+    if (typeof item.path === "string" && item.path) {
+      return `${spaceBase}/gradio_api/file=${item.path}`;
+    }
+
+    // Prefer the actual video field over other metadata such as subtitles.
+    for (const key of ["video", "value", "output", "data"]) {
+      if (key in item) {
+        const found = visit(item[key]);
+        if (found) return found;
+      }
+    }
+    for (const nested of Object.values(item)) {
+      const found = visit(nested);
+      if (found) return found;
+    }
+    return null;
+  };
+
+  return visit(fileData);
 }
 
 /**

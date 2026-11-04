@@ -77,3 +77,41 @@ These are added to the research catalog, not to the live selector. They remain y
 - CogVideo Online: https://cogvideo.net/online
 - PixVerse official free-credit FAQ: https://docs.pixverse.ai/FAQ-PixVerse-App-1533e99bf35080888cb5effee85f8289
 - Pika official pricing: https://pika.art/pricing
+
+
+## Batch 3 — test-first board (2026-11-04)
+
+The user approved a test-first workflow: test the candidates before adding them to the live app selector. Keep this board as the source of truth; do not expose unverified candidates as selectable models.
+
+### Test queue
+
+| Order | Candidate | Current status | Evidence / blocker | Test decision |
+|---|---|---|---|---|
+| 1 | LTX-2.5 official Hugging Face Space | YELLOW — API shape partly inspected; Worker test not run | Official Space source shows an optional input image, prompt, dimensions, duration, seed, decoder, auto-length, random-seed and prompt-enhancement inputs. Its Gradio handler returns video plus metadata. Public ZeroGPU availability is shared and quota-limited. | First candidate for a controlled adapter proof-of-concept. Before coding, confirm the live Gradio API endpoint/schema and upload protocol; then test through the Worker. |
+| 2 | LTX Video 0.9.8 Distilled | YELLOW — not tested | Public I2V Space exists; live API schema and upload/result flow still need inspection. | Next after LTX-2.5, or sooner if its API is simpler and accessible. |
+| 3 | FramePack F1 public demo | YELLOW — not tested | Public demo supports starting image + prompt; stable endpoint/API and queue access not confirmed. | Inspect exact Space and API, then test. |
+| 4 | Wan 2.2 14B Fast public Space | YELLOW — not tested | Possible separate Space/backend, but may duplicate the current Wan 2.2 family. | Compare endpoint and model identity before creating another selector entry. |
+| 5 | Wan 2.2 14B Preview public Space | YELLOW — not tested | Possible duplicate of current Wan 2.2 adapter; live API not inspected. | Compare with existing adapter; do not add a duplicate without a meaningful difference. |
+| 6 | Wan 2.1 I2V | YELLOW — not tested | Public I2V demo identified; live API schema and Worker compatibility unknown. | Inspect and test. |
+| 7 | NOVA LTX wrapper | YELLOW — not tested | Claims an unauthenticated Gradio queue, but actual endpoint and underlying model identity need verification. | Lower priority; avoid counting it as a distinct model. |
+| 8 | LTX-2.3 community demo | YELLOW — not tested | Public Space identified, but high-end GPU requirement makes free shared availability uncertain. | Test only if Space is currently running and accessible. |
+
+### Test gate — required for GREEN
+
+A candidate is promoted only when all of these pass:
+
+1. Confirm the exact upstream Space/API and its current public access conditions.
+2. Upload a test image through the 100days Worker (not just through the provider's website).
+3. Submit a prompt and receive a job/queue response.
+4. Receive the completed result through the existing Worker response/SSE flow.
+5. Confirm the returned MP4 is playable in the existing app preview and downloadable.
+6. Confirm errors/timeouts do not break Wan 2.2 or the separate `/generate-image` route.
+7. Record actual duration, queue outcome, free-access limitation, and date tested.
+
+A public demo page or successful provider-side browser test alone is not a GREEN result. If the public Space is temporarily busy, record YELLOW / blocked and retry later; do not label the model broken based on one transient queue failure.
+
+### First technical inspection — LTX-2.5
+
+The official Space's published `app.py` shows that image-to-video is selected by supplying an image path; the same handler also accepts prompt, height, width, duration, seed, decoder, auto-length, randomization and prompt-enhancement controls. It returns a video file plus prompt/seed/length metadata. This confirms the Space's I2V design, but does **not** yet confirm the current live Gradio API endpoint name, file-upload contract, public queue availability, or Worker compatibility. Therefore it remains YELLOW.
+
+Source: https://huggingface.co/spaces/Lightricks/LTX-2.5/blob/main/app.py

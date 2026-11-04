@@ -407,14 +407,18 @@ function parseSseEvent(raw: string): { name: string; data: string } | null {
 // Hardcoded because the browser doesn't know the Space URL and we'd rather
 // not round-trip just to fall back. If the upstream Space ever moves, this is
 // the one constant to update.
-const VIDEO_SPACE_BASES: Record<string, string> = {\n  "wan-2.2-hf": "https://cbensimon-wan2-2-fp8da-aoti-preview2.hf.space",\n  "ltx-video-distilled": "https://lightricks-ltx-video-distilled.hf.space",\n};
+const VIDEO_SPACE_BASES: Record<string, string> = {
+  "wan-2.2-hf": "https://cbensimon-wan2-2-fp8da-aoti-preview2.hf.space",
+  "ltx-video-distilled": "https://lightricks-ltx-video-distilled.hf.space",
+};
 
 /**
  * Get a playable absolute URL from whatever Gradio returned. v4 wraps files
  * in FileData objects with `url` and `path`; older code returns bare strings.
  * Belt-and-suspenders so a Gradio upgrade upstream doesn't silently break us.
  */
-function extractVideoUrl(fileData: unknown, modelId: string): string | null {\n  const spaceBase = VIDEO_SPACE_BASES[modelId] || VIDEO_SPACE_BASES["ltx-video-distilled"]!;
+function extractVideoUrl(fileData: unknown, modelId: string): string | null {
+  const spaceBase = VIDEO_SPACE_BASES[modelId] || VIDEO_SPACE_BASES["ltx-video-distilled"]!;
   if (!fileData) return null;
   if (typeof fileData === "string") {
     return `${spaceBase}/gradio_api/file=${fileData}`;

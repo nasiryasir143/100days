@@ -20,6 +20,8 @@ compatibility_flags = ["nodejs_compat"]
 ALLOWED_ORIGINS = "http://localhost:4321,https://nasiryasir143.github.io"
 HF_SPACE_BASE = "https://cbensimon-wan2-2-fp8da-aoti-preview2.hf.space"
 HF_FN_NAME = "generate_video"
+# Active video provider ID; add its adapter before changing this value.
+VIDEO_MODEL_ID = "wan-2.2-hf"
 
 # Observability is free on Workers and saves headaches when something breaks
 # in production. `wrangler tail` will stream logs live.

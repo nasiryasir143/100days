@@ -31,6 +31,29 @@ This catalog separates a free browser demo from a provider that is actually inte
 | HunyuanVideo I2V | Official model supports image-to-video | Open weights; public hosted free inference not established | Find a free hosted endpoint with a callable API; assess compute and limits |
 | SkyReels V2 I2V | Hugging Face I2V model listing | No verified free hosted API in this review | Find a public Space with I2V and inspect/test its API |
 
+
+## Batch 2 — newly discovered public demos (2026-11-04)
+
+These are added to the research catalog, not to the live selector. They remain yellow until the Worker can submit an image, receive the completed result, and return a playable MP4.
+
+| Candidate / endpoint | I2V evidence | Free route | Next verification |
+|---|---|---|---|
+| LTX-2.5 official Space | Official model documentation supports image-to-video; public Space has an optional starting image | Shared public ZeroGPU queue; anonymous quota is small and may return no-GPU/quota errors | Inspect the official Space's Gradio API and test from Worker |
+| LTX-2.5 browser client demo | Browser page sends image/prompt requests to the official Lightricks Space | Public shared queue; page says anonymous users share limited quota | Treat as proof of a browser-accessible route, not a separate model/provider; inspect its request flow/API |
+| FramePack F1 public demo | Starting image + motion prompt produces video | Public ZeroGPU demo; shared quota and queue, sign-in may be required | Identify the underlying Space and verify its Gradio endpoint |
+| Wan 2.2 14B Fast public Space | Space directory describes animation from a single image and prompt | Public ZeroGPU queue | Inspect Space API and compare with the existing Wan 2.2 adapter before adding as a separate option |
+| Wan 2.2 14B Preview public Space | Space directory describes image + text prompt video generation | Public ZeroGPU queue | Inspect API and determine whether it is a distinct backend or duplicate of the current Wan 2.2 family |
+| LTX-2.3 community demo | Space card describes image-to-video with a conditioning image | Public Space page exists, but its notes say it needs A100 80GB/H100-class hardware; no dependable free GPU claim | Do not treat as free until live hardware/quota is verified |
+| LTX-2.3 / LTX-2.5 workflows on wan2.video | Curated pages link to public LTX image-to-video workflows | Shared HF ZeroGPU capacity | Demo directory only, not independent model backends; verify each underlying Space once |
+| NOVA public LTX generator | Page describes image upload + prompt and an unauthenticated Gradio queue endpoint | Claims no provider token/payment setup; shared free queue can be rate-limited or unavailable | Verify actual endpoint, API schema, and whether it is the official LTX Space before integration |
+
+### Batch 2 assessment
+
+- New green models: 0. None has yet passed a real request through our 100days Worker.
+- New yellow demo routes: LTX-2.5 official Space, FramePack F1 demo, Wan 2.2 Fast/Preview Spaces, LTX-2.3 community demo, and the NOVA LTX wrapper.
+- Do not count multiple frontends for the same underlying model as separate models. Track both model family and endpoint so duplicate demos do not inflate the count.
+- LTX-2.5's official API is documented as a paid API with per-second billing. That is not the same as the shared free public Space; do not use the paid API unless separately approved.
+
 ## Important implementation rules
 
 1. Do not put yellow candidates in the live model selector. Only green adapters belong there.

@@ -95,7 +95,7 @@ export default {
         modelForm.append("width", "1024");
         modelForm.append("height", "1024");
 
-        const image = form.get("image");
+        const image = form.get("image") as unknown as File | null;
 
         if (image && typeof image !== "string" && image.size > 0) {
           if (image.size > 8 * 1024 * 1024) {
